@@ -1,0 +1,297 @@
+import java.awt.EventQueue;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.JFrame;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+import java.awt.Font;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import net.proteanit.sql.DbUtils;
+
+import java.awt.Color;
+
+public class secRegistration {
+
+	private JFrame frmTableWithMysql;
+	private JTextField txtSearch;
+	private JButton btnSearch_2;
+	private JButton btnReload;
+	Connection con;
+	PreparedStatement pst; 
+	String sql;
+	ResultSet rs;
+	java.sql.Statement st;
+	
+	final String url = "jdbc:mysql://localhost:3306/tblstd";
+	final String user = "myReg";
+	final String password = "IT123";
+	
+	public static String msg;
+	private JTable tableRecords;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				// register MySQL thin driver with DriverManager service
+				try {
+					Class.forName("com.mysql.cj.jdbc.Driver");
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				// variables
+				final String url = "jdbc:mysql://localhost:3306/tblstd";
+				final String user = "myReg";
+				final String password = "IT123";
+				// establish the connection
+				Connection con = null;
+				try {
+					con = DriverManager.getConnection(url, user, password);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					con = DriverManager.getConnection(url, user, password);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				// display status message
+
+				if (con == null) {
+					//JOptionPane.showMessageDialog(null, "JDBC connection is not established");
+					msg = "JDBC connection is not established!";
+					return;
+				} else
+					msg = "JDBC connection is established successfully!";
+				// close JDBC connection
+				try {
+					con.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				try {
+					secRegistration window = new secRegistration();
+					window.frmTableWithMysql.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public secRegistration() {
+		initialize();
+		Table();
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		//Components
+		frmTableWithMysql = new JFrame();
+		frmTableWithMysql.setBackground(Color.WHITE);
+		frmTableWithMysql.setForeground(Color.BLUE);
+		
+		frmTableWithMysql.setTitle("Table with MySQL ");
+		frmTableWithMysql.setBounds(100, 100, 1083, 556);
+		frmTableWithMysql.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmTableWithMysql.getContentPane().setLayout(null);
+		
+
+		
+
+		JLabel lblNewLabel = new JLabel("Students Records");
+		lblNewLabel.setBounds(24, 22, 330, 27);
+		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 30));
+		frmTableWithMysql.getContentPane().add(lblNewLabel);
+
+		btnReload = new JButton("Reload");
+		btnReload.setForeground(new Color(255, 255, 255));
+		btnReload.setBackground(new Color(216, 191, 216));
+		btnReload.setBounds(637, 17, 102, 32);
+		btnReload.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Table();
+			}
+		});
+		frmTableWithMysql.getContentPane().add(btnReload);
+
+		btnSearch_2 = new JButton("Search");
+		btnSearch_2.setBounds(749, 17, 102, 32);
+		btnSearch_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Search();
+				txtSearch.setText(null);
+			}
+		});
+		frmTableWithMysql.getContentPane().add(btnSearch_2);
+
+		txtSearch = new JTextField();
+		txtSearch.setColumns(10);
+		txtSearch.setBounds(878, 21, 181, 19);
+		frmTableWithMysql.getContentPane().add(txtSearch);
+		txtSearch.setColumns(10);
+
+		JLabel lblNewLabel_1 = new JLabel("New label");
+		lblNewLabel_1.setBounds(10, 489, 282, 19);
+		lblNewLabel_1.setText(msg);
+		frmTableWithMysql.getContentPane().add(lblNewLabel_1);
+
+		tableRecords = new JTable();
+		tableRecords.setBounds(10, 66, 1049, 417);
+		//the table header
+		tableRecords.setModel(new DefaultTableModel(
+				new Object[][] {
+				},
+				new String[] {
+						"studID", "studName", "studGender", "studAddress","studCode","studSection",
+						"studCourse","studEmail","studYearLevel","studContact"
+				}
+				) {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+		});
+
+		frmTableWithMysql.getContentPane().add(tableRecords);
+
+		
+		//Size for the columns of the Table
+		tableRecords.getColumnModel().getColumn(0).setResizable(false);
+		tableRecords.getColumnModel().getColumn(0).setPreferredWidth(10);
+		tableRecords.getColumnModel().getColumn(0).setMinWidth(10);
+		tableRecords.getColumnModel().getColumn(1).setResizable(false);
+		tableRecords.getColumnModel().getColumn(1).setPreferredWidth(110);
+		tableRecords.getColumnModel().getColumn(1).setMinWidth(110);
+		tableRecords.getColumnModel().getColumn(2).setResizable(false);
+		tableRecords.getColumnModel().getColumn(2).setPreferredWidth(50);
+		tableRecords.getColumnModel().getColumn(2).setMinWidth(50);
+		tableRecords.getColumnModel().getColumn(3).setResizable(false);
+		tableRecords.getColumnModel().getColumn(3).setPreferredWidth(120);
+		tableRecords.getColumnModel().getColumn(3).setMinWidth(120);
+		tableRecords.getColumnModel().getColumn(4).setResizable(false);
+		tableRecords.getColumnModel().getColumn(4).setPreferredWidth(50);
+		tableRecords.getColumnModel().getColumn(4).setMinWidth(50);
+		tableRecords.getColumnModel().getColumn(5).setResizable(false);
+		tableRecords.getColumnModel().getColumn(5).setPreferredWidth(90);
+		tableRecords.getColumnModel().getColumn(5).setMinWidth(90);
+		tableRecords.getColumnModel().getColumn(8).setResizable(false);
+		tableRecords.getColumnModel().getColumn(8).setPreferredWidth(110);
+		tableRecords.getColumnModel().getColumn(8).setMinWidth(110);
+		
+		// JScrollPane was used so that table will be scrollable
+		JScrollPane panel = new JScrollPane();
+		panel.setBounds(10, 66, 1049, 413);
+		frmTableWithMysql.getContentPane().add(panel);
+		
+//		panel.setViewportView(tableRecords);
+//		panel.add(tableRecords.getTableHeader());
+
+		JPanel background = new JPanel();
+		background.setBounds(0, 0, 1069, 519);
+		Color GOLD = new Color(255,204,51);
+		background.setBackground(Color.PINK);
+		frmTableWithMysql.getContentPane().add(background);
+	}
+
+	public void Table() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://localhost/tblstd","myReg", "IT123");
+			sql = "select * from studentsystem";
+			pst = con.prepareStatement(sql,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+			rs = pst.executeQuery();
+
+			DefaultTableModel model = (DefaultTableModel)tableRecords.getModel();
+			model.setRowCount(0);
+
+			while(rs.next()) {
+				String studID = rs.getString("studID");
+				String studName = rs.getString("studName");
+				String studGender = rs.getString("studGender");
+				String studAddress = rs.getString("studAddress");
+				String studCode = rs.getString("studCode");
+				String studSection = rs.getString("studSection");
+				String studCourse = rs.getString("studCourse");
+				String studEmail = rs.getString("studEmail");
+				String studYearLevel = rs.getString("studYearLevel");
+				String studContact = rs.getString("studContact");
+
+				model.addRow(new Object[] {studID,studName,studGender,studAddress,studCode,studSection,
+						studCourse,studEmail,studYearLevel,studContact});
+			}
+		}catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace(); 
+
+		}catch (ClassNotFoundException e) {
+			e.printStackTrace();
+
+		}
+	}
+
+	public void Search() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://localhost/hospitalsystem","myRoot", "password");
+			String strSearch = txtSearch.getText();
+			sql = "select * from tblpatient where patID = '" + strSearch + "'or UPPER(patName) like'%" + strSearch.toUpperCase() + "%'";
+			pst = con.prepareStatement(sql,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+			rs = pst.executeQuery();
+			
+
+			DefaultTableModel model = (DefaultTableModel)tableRecords.getModel();
+			model.setRowCount(0);
+
+			if(rs.next()) {
+				String studID = rs.getString("studID");
+				String studName = rs.getString("studName");
+				String studGender = rs.getString("studGender");
+				String studAddress = rs.getString("studAddress");
+				String studCode = rs.getString("studCode");
+				String studSection = rs.getString("studSection");
+				String studCourse = rs.getString("studCourse");
+				String studEmail = rs.getString("studEmail");
+				String studYearLevel = rs.getString("studYearLevel");
+				String studContact = rs.getString("studContact");
+
+				model.addRow(new Object[] {studID,studName,studGender,studAddress,studCode,studSection,
+						studCourse,studEmail,studYearLevel,studContact});
+				
+				}else {
+					JOptionPane.showMessageDialog(null, "No Records!"," ", JOptionPane.ERROR_MESSAGE);
+					Table();
+				}
+		}catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace(); 
+
+		}catch (ClassNotFoundException e) {
+			e.printStackTrace();
+
+		}
+	}
+}
