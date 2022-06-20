@@ -1,0 +1,857 @@
+import java.awt.EventQueue;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+
+import java.awt.Color;
+import javax.swing.JTextField;
+
+import net.proteanit.sql.DbUtils;
+
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+import java.awt.Font;
+import javax.swing.JComboBox;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.SwingConstants;
+
+public class mainRegistration {
+
+	private JFrame frmRegistration;
+	private final JPanel panel = new JPanel();
+	private final JLabel lblStudID = new JLabel("Student ID");
+	private final JLabel lblStudName = new JLabel("Student Name");
+	private final JLabel lblStudSex = new JLabel("Gender");
+	private JLabel msg_1;
+
+	private final JTextField txtStudID = new JTextField();
+	private final JTextField txtStudName = new JTextField();
+	private JTextField txtStudSection;
+	private JTextField txtCourse;
+	private JTextField txtEmail;
+	private JTextField txtAddress;
+	private JTextField txtYearLevel;
+	private JTextField txtContact;
+	private JTextField txtSearch;
+
+	private final String[] gender =  {"Male", "Female"};
+	private JComboBox cmbGender = new JComboBox(gender);
+	private final String[] code =  {"Java", "Python", "JavaScript", "C", "C++", "C#", "SQL"};
+	JComboBox cmbCode = new JComboBox(code);
+
+	private JButton btnAdd;
+	private JButton btnFirst;
+	private JButton btnSearch;
+	private JButton btnPrevious;
+	private JButton btnReload;
+	private JButton btnViewAll;
+	private JButton btnDelete;
+	private JButton btnCancel;
+	private JButton btnSave;
+	private JButton btnEdit;
+	private JButton btnLast;
+	private JButton btnNext;
+
+
+	Connection con;
+	PreparedStatement pst; 
+	ResultSet rs;
+	java.sql.Statement st;
+	// variables
+	final String url = "jdbc:mysql://localhost:3306/tblstd";
+	final String user = "myReg";
+	final String password = "IT123";
+	String sql, studID, studName, studGender, studAddress, studCode, studCourse, studEmail, studYearLevel, studContact, studSection;
+	public static String msg;
+	int flag;
+	private JPanel background;
+
+
+
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+
+				// register MySQL driver with DriverManager service
+				try {
+					Class.forName("com.mysql.cj.jdbc.Driver");
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				// variables
+				final String url = "jdbc:mysql://localhost:3306/tblstd";
+				final String user = "myReg";
+				final String password = "IT123";
+				// establish the connection
+				Connection con = null;
+				try {
+					con = DriverManager.getConnection(url, user, password);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				// display status message
+
+				if (con == null) {
+					msg = "JDBC connection is not established!";
+					return;
+				} else
+					msg = "JDBC connection is established successfully!";
+				// close JDBC connection
+				try {
+					con.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					mainRegistration window = new mainRegistration();
+					window.frmRegistration.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public mainRegistration() {
+		initialize();
+
+		// calling the method LoadData, will load the initial values for the textfields
+		loadStudent();
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		txtStudID.setEnabled(false);
+		txtStudID.setBounds(135, 83, 87, 19);
+		txtStudID.setColumns(10);
+		frmRegistration = new JFrame();
+		frmRegistration.setTitle("IT Management System");
+		frmRegistration.setBounds(100, 100, 486, 644);
+		frmRegistration.setLocationRelativeTo(null);
+		frmRegistration.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmRegistration.getContentPane().setLayout(null);
+		panel.setBounds(0, 0, 486, 56);
+		panel.setBackground(Color.LIGHT_GRAY);
+		frmRegistration.getContentPane().add(panel);
+		panel.setLayout(null);
+
+		JLabel lblStudent = new JLabel("Students Information");
+		lblStudent.setHorizontalAlignment(SwingConstants.CENTER);
+		lblStudent.setForeground(Color.WHITE);
+		lblStudent.setFont(new Font("Tahoma", Font.BOLD, 20));
+
+		lblStudent.setBounds(100, 15, 268, 25);
+		panel.add(lblStudent);
+		lblStudID.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblStudID.setBounds(23, 79, 72, 24);
+
+		frmRegistration.getContentPane().add(lblStudID);
+
+		frmRegistration.getContentPane().add(txtStudID);
+		lblStudName.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblStudName.setBounds(23, 113, 87, 24);
+
+		frmRegistration.getContentPane().add(lblStudName);
+		txtStudName.setEnabled(false);
+		txtStudName.setColumns(10);
+		txtStudName.setBounds(135, 117, 227, 19);
+
+		frmRegistration.getContentPane().add(txtStudName);
+		lblStudSex.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblStudSex.setBounds(23, 147, 87, 24);
+
+		frmRegistration.getContentPane().add(lblStudSex);
+
+
+		cmbGender = new JComboBox(gender);
+		cmbGender.setEnabled(false);
+		cmbGender.setBounds(135, 151, 87, 19);
+		frmRegistration.getContentPane().add(cmbGender);
+
+		JLabel lblCode = new JLabel("Preffered Coding Language");
+		lblCode.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblCode.setBounds(23, 209, 171, 24);
+		frmRegistration.getContentPane().add(lblCode);
+
+		JLabel lblSection = new JLabel("Section");
+		lblSection.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblSection.setBounds(23, 243, 87, 24);
+		frmRegistration.getContentPane().add(lblSection);
+
+		txtStudSection = new JTextField();
+		txtStudSection.setEnabled(false);
+		txtStudSection.setColumns(10);
+		txtStudSection.setBounds(135, 247, 115, 19);
+		frmRegistration.getContentPane().add(txtStudSection);
+
+		JLabel lblCourse = new JLabel("Student Course");
+		lblCourse.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblCourse.setBounds(23, 280, 97, 24);
+		frmRegistration.getContentPane().add(lblCourse);
+
+		JLabel lblEmail = new JLabel("Email");
+		lblEmail.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblEmail.setBounds(23, 310, 97, 24);
+		frmRegistration.getContentPane().add(lblEmail);
+
+		txtCourse = new JTextField();
+		txtCourse.setEnabled(false);
+		txtCourse.setColumns(10);
+		txtCourse.setBounds(135, 280, 112, 19);
+		frmRegistration.getContentPane().add(txtCourse);
+
+		txtEmail = new JTextField();
+		txtEmail.setEnabled(false);
+		txtEmail.setColumns(10);
+		txtEmail.setBounds(135, 311, 227, 19);
+		frmRegistration.getContentPane().add(txtEmail);
+
+		JLabel lblYear = new JLabel("Year Level");
+		lblYear.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblYear.setBounds(23, 338, 87, 24);
+		frmRegistration.getContentPane().add(lblYear);
+
+		JLabel lblContact = new JLabel("Contact");
+		lblContact.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblContact.setBounds(23, 368, 97, 24);
+		frmRegistration.getContentPane().add(lblContact);
+
+		JLabel lblAddress = new JLabel("Address");
+		lblAddress.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblAddress.setBounds(23, 181, 87, 24);
+		frmRegistration.getContentPane().add(lblAddress);
+
+		txtAddress = new JTextField();
+		txtAddress.setEnabled(false);
+		txtAddress.setColumns(10);
+		txtAddress.setBounds(135, 185, 227, 19);
+		frmRegistration.getContentPane().add(txtAddress);
+
+		txtYearLevel = new JTextField();
+		txtYearLevel.setEnabled(false);
+		txtYearLevel.setColumns(10);
+		txtYearLevel.setBounds(135, 342, 115, 19);
+		frmRegistration.getContentPane().add(txtYearLevel);
+
+		txtContact = new JTextField();
+		txtContact.setEnabled(false);
+		txtContact.setColumns(10);
+		txtContact.setBounds(135, 371, 143, 19);
+		frmRegistration.getContentPane().add(txtContact);
+
+		JLabel searchIDName = new JLabel("Search using ID or Name");
+		searchIDName.setFont(new Font("Tahoma", Font.BOLD, 12));
+		searchIDName.setBounds(23, 415, 153, 24);
+		frmRegistration.getContentPane().add(searchIDName);
+
+		txtSearch = new JTextField();
+		txtSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+			}
+		});
+		txtSearch.setColumns(10);
+		txtSearch.setBounds(186, 419, 112, 19);
+		frmRegistration.getContentPane().add(txtSearch);
+
+		btnSearch = new JButton("Search");
+
+		btnSearch.setBounds(310, 418, 85, 21);
+		frmRegistration.getContentPane().add(btnSearch);
+
+		btnFirst = new JButton("|<");
+		btnFirst.setBackground(new Color(240, 240, 240));
+
+		// ActionListener for Max Previous button
+		btnFirst.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				prevDataMax();
+			}
+		});
+		btnFirst.setBounds(53, 463, 85, 21);
+		frmRegistration.getContentPane().add(btnFirst);
+
+		btnPrevious = new JButton("<");
+
+		// ActionListener for Previous button
+		btnPrevious.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				prevData();
+			}
+		});
+		btnPrevious.setBounds(140, 463, 85, 21);
+		frmRegistration.getContentPane().add(btnPrevious);
+
+		btnNext = new JButton(">");
+
+		//ActionListener for the Next Button 
+		btnNext.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				nextData();
+			}
+		});
+		btnNext.setBounds(228, 463, 85, 21);
+		frmRegistration.getContentPane().add(btnNext);
+
+		btnLast = new JButton(">|");
+		// ActionListener for Next Max Button
+		btnLast.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				nextDataMax();
+			}
+		});
+		btnLast.setBounds(315, 463, 85, 21);
+		frmRegistration.getContentPane().add(btnLast);
+
+		btnAdd = new JButton("ADD");
+		btnAdd.setForeground(new Color(255, 255, 255));
+		btnAdd.setBackground(new Color(0, 128, 0));
+
+		btnAdd.setBounds(20, 498, 85, 21);
+		frmRegistration.getContentPane().add(btnAdd);
+
+		btnEdit = new JButton("EDIT");
+		btnEdit.setBackground(new Color(70, 130, 180));
+		btnEdit.setForeground(new Color(255, 255, 255));
+
+		btnEdit.setBounds(106, 498, 85, 21);
+		frmRegistration.getContentPane().add(btnEdit);
+
+		btnSave = new JButton("SAVE");
+		btnSave.setBackground(new Color(46, 139, 87));
+		btnSave.setForeground(new Color(255, 255, 255));
+		btnSave.setEnabled(false);
+
+		btnSave.setBounds(193, 498, 85, 21);
+		frmRegistration.getContentPane().add(btnSave);
+
+		btnCancel = new JButton("CANCEL");
+		btnCancel.setForeground(new Color(0, 0, 0));
+
+		btnCancel.setEnabled(false);
+		btnCancel.setBounds(279, 498, 85, 21);
+		frmRegistration.getContentPane().add(btnCancel);
+
+
+		btnDelete = new JButton("DELETE");
+		btnDelete.setBackground(new Color(220, 20, 60));
+		btnDelete.setForeground(new Color(255, 255, 255));
+		btnDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				delete();
+				loadStudent();
+			}
+		});
+		btnDelete.setBounds(367, 498, 85, 21);
+		frmRegistration.getContentPane().add(btnDelete);
+
+		btnReload = new JButton("Reload");
+		btnReload.setBackground(new Color(216, 191, 216));
+		btnReload.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				loadStudent();
+				btnSave.setEnabled(false);
+				btnCancel.setEnabled(false);
+				btnPrevious.setEnabled(true);
+				btnFirst.setEnabled(true);
+				btnNext.setEnabled(true);
+				btnLast.setEnabled(true);
+
+			}
+		});
+		btnReload.setBounds(93, 529, 129, 21);
+		frmRegistration.getContentPane().add(btnReload);
+
+
+		btnViewAll = new JButton("View All Records");
+		btnViewAll.setBackground(new Color(135, 206, 250));
+		btnViewAll.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Thread t1 = new Thread(){
+					public void run() {
+						secRegistration.main(new String[] {});
+					}
+				};
+				t1.start();
+				try {
+					t1.join();
+				}catch(InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		btnViewAll.setBounds(228, 529, 134, 21);
+		frmRegistration.getContentPane().add(btnViewAll);
+
+		JLabel JDBC = new JLabel("");
+		JDBC.setBounds(10, 578, 268, 19);
+		JDBC.setText(msg);
+		frmRegistration.getContentPane().add(JDBC);
+
+		background = new JPanel();
+		background.setBounds(0, 53, 472, 554);
+		Color PINK = new Color(255,204,51);
+		background.setBackground(Color.PINK);
+		frmRegistration.getContentPane().add(background);
+		background.setLayout(null);
+		
+		
+				cmbCode = new JComboBox(code);
+				cmbCode.setBounds(204, 162, 59, 19);
+				background.add(cmbCode);
+				cmbCode.setEnabled(false);
+
+
+
+		// ActionListener for btnAdd
+		btnAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				// enabling textfield and setting values to null
+				txtStudID.setEnabled(false);
+				IncrementStudID();
+				EnablingText();
+				txtStudName.requestFocusInWindow();
+
+				txtStudName.setText(null);
+				cmbGender.setSelectedIndex(-1);
+				txtAddress.setText(null);
+				cmbCode.setSelectedIndex(-1);
+				txtStudSection.setText(null);
+				txtCourse.setText(null);
+				txtEmail.setText(null);
+				txtYearLevel.setText(null);
+				txtContact.setText(null);
+				flag=1; // flag is for Add
+
+				//Disabling BUTTON 
+				DisablingButton();
+				btnSave.setEnabled(true);
+				btnCancel.setEnabled(true);
+
+			}
+		});
+
+		// ActionListener for Edit Button
+		btnEdit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				//enabling the textFields
+				EnablingText();
+				btnSave.setEnabled(true);
+				btnCancel.setEnabled(true);
+
+				//Disabling the Button
+				DisablingButton();
+				flag = 2;
+			}
+		});
+
+		// ActionListener for Save Button
+		btnSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+
+					// Disabling textfields
+					DisablingText();
+					btnSave.setEnabled(false);
+					btnCancel.setEnabled(false);
+
+					//Enabling Buttons
+					btnAdd.setEnabled(true);
+					btnEdit.setEnabled(true);
+					btnDelete.setEnabled(true);
+					btnFirst.setEnabled(true);
+					btnPrevious.setEnabled(true);
+					btnNext.setEnabled(true);
+					btnLast.setEnabled(true);
+
+					// Putting textfield values to variables
+					studID = txtStudID.getText();
+					studName = txtStudName.getText();
+					studGender = cmbGender.getSelectedItem().toString();
+					studAddress = txtAddress.getText();	
+					studCode = cmbCode.getSelectedItem().toString();
+					studSection = txtStudSection.getText();
+					studCourse = txtCourse.getText();
+					studEmail = txtEmail.getText();
+					studYearLevel = txtYearLevel.getText();
+					studContact = txtContact.getText();
+
+					// register MySQL driver with DriverManager service
+					Class.forName("com.mysql.cj.jdbc.Driver");
+
+					if(studID.equals("") || studName.equals("") || studGender.equals("") || studAddress.equals("") || studCode.equals("") || studCourse.equals("") || studEmail.equals("") || 
+							studYearLevel.equals("") || studContact.equals("") || studSection.equals("") ) {
+						EnablingText();
+						DisablingButton();
+						btnSave.setEnabled(true);
+						btnCancel.setEnabled(true);
+						JOptionPane.showMessageDialog(null,"Fill up missing information");
+
+					}else if(flag == 1) {
+						con = DriverManager.getConnection(url, user, password);
+						sql = "insert into studentsystem(studName,studGender,studAddress,studCode, studSection, studCourse, studEmail, studYearLevel, studContact) values (?,?,?,?,?,?,?,?,?)";
+						// PrepareStatment for SQL
+						pst = con.prepareStatement(sql);
+						pst.setString(1, studName);
+						pst.setString(2, studGender);
+						pst.setString(3, studAddress);
+						pst.setString(4, studCode);
+						pst.setString(5, studSection);
+						pst.setString(6, studCourse);
+						pst.setString(7, studEmail);
+						pst.setString(8, studYearLevel);
+						pst.setString(9, studContact);
+						pst.executeUpdate();
+
+						JOptionPane.showMessageDialog(null, "Record Saved!");
+					}
+					else if (flag == 2){
+						con = DriverManager.getConnection(url, user, password);
+						sql = "UPDATE studentsystem SET studName = ? ,studGender = ?,studAddress = ?,studCode = ?, studSection = ?, studCourse = ?, studEmail = ?, studYearLevel = ?, studContact = ? WHERE studID = ? ";
+						// PrepareStatment for SQL
+						pst = con.prepareStatement(sql);
+						pst.setString(1, studName);
+						pst.setString(2, studGender);
+						pst.setString(3, studAddress);
+						pst.setString(4, studCode);
+						pst.setString(5, studSection);
+						pst.setString(6, studCourse);
+						pst.setString(7, studEmail);
+						pst.setString(8, studYearLevel);
+						pst.setString(9, studContact);
+						pst.setString(10, studID);
+						pst.executeUpdate();
+						con.close();
+						JOptionPane.showMessageDialog(null, "Record updated!");
+					}
+				}catch(Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		btnCancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try  {
+
+					// Disabling textfields
+					DisablingText();
+					btnAdd.setEnabled(true);
+					btnDelete.setEnabled(true);
+					btnEdit.setEnabled(true);
+					btnPrevious.setEnabled(true);
+					btnFirst.setEnabled(true);
+					btnLast.setEnabled(true);
+					btnNext.setEnabled(true);
+					btnSave.setEnabled(false);
+					btnCancel.setEnabled(false);
+
+
+					Class.forName("com.mysql.cj.jdbc.Driver");
+
+					if (flag == 1) {
+						loadStudent();
+					}else if (flag == 2) {
+						sql = "select * from studentsystem where studID = ?";
+						pst = con.prepareStatement(sql,ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+						pst.setString(1, studID);
+						rs = pst.executeQuery();
+					}
+					if(rs.next()) {
+						databaseInfo();
+					}
+					JOptionPane.showMessageDialog(null, "Cancelled");
+				}catch(Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		btnSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				search();
+				txtSearch.setText(null);
+			}
+		});
+
+	}
+	public void IncrementStudID() {
+		try {
+			con = DriverManager.getConnection(url, user, password);	
+			sql = "select * FROM studentsystem ";
+			pst = con.prepareStatement(sql,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+			rs = pst.executeQuery();
+
+			rs.last();
+			txtStudID.setText(String.valueOf((Integer.parseInt(rs.getString(1)) + 1)));
+
+			con.close();
+		}catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	// method for Load the data 
+	public void loadStudent() {
+
+		try { 
+			// register MySQL driver with DriverManager service
+			Class.forName("com.mysql.cj.jdbc.Driver");	
+			// establish the connection
+			con = DriverManager.getConnection(url, user, password);	
+			sql = "select * FROM studentsystem ";
+			pst = con.prepareStatement(sql,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+			rs = pst.executeQuery();
+
+			if(rs.next()) {
+				databaseInfo();
+			}
+		}catch(Exception exp) {
+			exp.printStackTrace();
+		}
+	}
+
+	// method for first button ( |< )
+
+	public void prevDataMax() {
+
+		try {
+			sql = "select * from studentsystem";
+			pst = con.prepareStatement(sql,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+			rs = pst.executeQuery(sql);
+
+			if(rs.next()) {
+
+				rs.first();
+				databaseInfo();
+			}if(rs.first() == true) {
+				JOptionPane.showMessageDialog(null, "First Record has been Reached");
+				btnFirst.setEnabled(false);
+				btnPrevious.setEnabled(false);
+				btnNext.setEnabled(true);
+				btnLast.setEnabled(true);
+
+			}
+
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	// method for the back button ( < )
+	public void prevData() {
+		try {
+			btnNext.setEnabled(true);
+			btnLast.setEnabled(true);
+			if(rs.previous()) {
+				databaseInfo();
+
+			}else {
+				rs.first();
+				JOptionPane.showMessageDialog(null, "First Record has been Reached");
+				btnFirst.setEnabled(false);
+				btnPrevious.setEnabled(false);
+
+			}
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}	
+
+	// method for the next button (>)
+	public void nextData() {
+		try {
+
+			btnFirst.setEnabled(true);
+			btnPrevious.setEnabled(true);
+			if(rs.next() == true) {
+
+				databaseInfo();
+			}else {
+				rs.last();
+				JOptionPane.showMessageDialog(null, "Last Record has been Reached");	
+				btnNext.setEnabled(false);
+				btnLast.setEnabled(false);
+			}
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	// method for Last Button ( >| )
+	public void nextDataMax() {
+
+		try {
+			sql = "select * from studentsystem";
+			pst = con.prepareStatement(sql,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+			rs = pst.executeQuery(sql);
+
+			if(rs.next()) {
+
+				rs.last();
+				databaseInfo();
+			}if(rs.last() == true) {
+				JOptionPane.showMessageDialog(null, "Last Record has been Reached");
+				btnFirst.setEnabled(true);
+				btnPrevious.setEnabled(true);
+				btnNext.setEnabled(false);
+				btnLast.setEnabled(false);
+			}
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	//for DELETING
+	public void delete() {
+		studID = txtStudID.getText();
+
+		try {
+
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://localhost/tblstd","myReg", "IT123");
+			sql = "DELETE from studentsystem where studID = ?";
+			pst = con.prepareStatement(sql);
+			pst.setString(1, studID);
+			pst.executeUpdate();
+
+			JOptionPane.showMessageDialog(null, "Student Record Successfully Deleted!");
+		}catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	//ssearch to the DATABASE
+	public void search() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://localhost/tblstd","myReg", "IT123");
+			String strSearch = txtSearch.getText();
+			sql = "select * from studentsystem where studID = '" + strSearch + "'or UPPER(studName) like'%" + strSearch.toUpperCase() + "%'";
+			pst = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			rs = pst.executeQuery();
+
+			if(rs.next()) {
+				databaseInfo();
+			}else {
+				JOptionPane.showMessageDialog(null, "No Records!"," ", JOptionPane.ERROR_MESSAGE);
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	//for getting the info in the DATABASE 
+	public void databaseInfo() {
+
+		try {
+			studID = rs.getString("studID");
+			studName = rs.getString("studName");
+			studGender = rs.getString("studGender");
+			studAddress = rs.getString("studAddress");
+			studCode = rs.getString("studCode");
+			studSection = rs.getString("studSection");
+			studCourse = rs.getString("studCourse");
+			studEmail = rs.getString("studEmail");
+			studYearLevel = rs.getString("studYearLevel");
+			studContact = rs.getString("studContact");
+			txtStudID.setText(studID.trim());
+			txtStudName.setText(studName.trim());
+			txtAddress.setText(studAddress.trim());
+			txtStudSection.setText(studSection.trim());
+			txtCourse.setText(studCourse.trim());
+			txtEmail.setText(studEmail.trim());
+			txtYearLevel.setText(studYearLevel.trim());
+			txtContact.setText(studContact.trim());
+			if(studGender.equals("Male")) {
+				cmbGender.setSelectedIndex(0);
+			}else {
+				cmbGender.setSelectedIndex(1);
+			}
+			if(studCode.equals("Java")) {
+				cmbCode.setSelectedIndex(0);
+			}else if (studCode.equals("Python")) {
+				cmbCode.setSelectedIndex(1);
+			}else if (studCode.equals("JavaScript")) {
+				cmbCode.setSelectedIndex(2);
+			}else if (studCode.equals("C")) {
+				cmbCode.setSelectedIndex(3);
+			}else if (studCode.equals("C++")) {
+				cmbCode.setSelectedIndex(4);
+			}else if (studCode.equals("C#")) {
+				cmbCode.setSelectedIndex(5);
+			}else if (studCode.equals("SQL")){
+				cmbCode.setSelectedIndex(6);
+			}else {
+				cmbCode.setSelectedIndex(7);
+			}
+
+		}catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	//for disabling TEXT
+
+	public void DisablingText() {
+		txtStudID.setEnabled(false);
+		txtStudName.setEnabled(false);
+		cmbGender.setEnabled(false);
+		txtAddress.setEnabled(false);
+		cmbCode.setEnabled(false);
+		txtStudSection.setEnabled(false);
+		txtCourse.setEnabled(false);
+		txtEmail.setEnabled(false);
+		txtYearLevel.setEnabled(false);
+		txtContact.setEnabled(false);
+	}
+
+	//for Enabling TEXT
+	public void EnablingText() {
+		txtStudName.setEnabled(true);
+		cmbGender.setEnabled(true);
+		txtAddress.setEnabled(true);
+		cmbCode.setEnabled(true);
+		txtStudSection.setEnabled(true);
+		txtCourse.setEnabled(true);
+		txtEmail.setEnabled(true);
+		txtYearLevel.setEnabled(true);
+		txtContact.setEnabled(true);
+	}
+
+	public void DisablingButton() {
+		btnAdd.setEnabled(false);
+		btnEdit.setEnabled(false);
+		btnDelete.setEnabled(false);
+		btnFirst.setEnabled(false);
+		btnPrevious.setEnabled(false);
+		btnNext.setEnabled(false);
+		btnLast.setEnabled(false);
+	}
+}
